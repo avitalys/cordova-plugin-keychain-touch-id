@@ -1,3 +1,4 @@
+
 var argscheck = require('cordova/argscheck'),
                exec = require('cordova/exec');
 
@@ -19,7 +20,15 @@ var touchid = {
 	},
 	setLocale: function(locale,successCallback, errorCallback){
 		exec(successCallback, errorCallback, "TouchID", "setLocale", [locale]);
-	}
+	},
+    didFingerprintDatabaseChange: function(locale,successCallback, errorCallback){
+        exec(successCallback, errorCallback, "TouchID", "didFingerprintDatabaseChange", [locale]);
+	},
+	verifyFingerprint: function(message,successCallback, errorCallback){
+        exec(successCallback, errorCallback, "TouchID", "verifyFingerprint", [message]);
+    }
 };
 
 module.exports = touchid;
+
+
