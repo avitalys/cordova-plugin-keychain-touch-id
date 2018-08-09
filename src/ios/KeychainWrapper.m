@@ -29,16 +29,13 @@ static const UInt8 kKeychainItemIdentifier[]    = "com.apple.dts.KeychainUI\0";
 
 @end
 
-
 @implementation KeychainWrapper
 
 - (instancetype)init
 {
     self = [super init];
     
-    if (self) {
-        
-        
+    if (self) {  
         OSStatus keychainErr = noErr;
         // Set up the keychain search dictionary:
         _genericPasswordQuery = [[NSMutableDictionary alloc] init];
@@ -132,7 +129,6 @@ static const UInt8 kKeychainItemIdentifier[]    = "com.apple.dts.KeychainUI\0";
     [_keychainData setObject:@"Your comment here." forKey:(__bridge id)kSecAttrComment];
     [_keychainData setObject:@"password" forKey:(__bridge id)kSecValueData];
 }
-
 
 // Implement the dictionaryToSecItemFormat: method, which takes the attributes that
 // you want to add to the keychain item and sets up a dictionary in the format
@@ -231,8 +227,8 @@ static const UInt8 kKeychainItemIdentifier[]    = "com.apple.dts.KeychainUI\0";
         
         // You can update only a single keychain item at a time.
         OSStatus errorcode = SecItemUpdate(
-                                           (__bridge CFDictionaryRef)updateItem,
-                                           (__bridge CFDictionaryRef)tempCheck);
+            (__bridge CFDictionaryRef)updateItem,
+            (__bridge CFDictionaryRef)tempCheck);
         NSAssert(errorcode == noErr, @"Couldn't update the Keychain Item." );
     }
     else
@@ -242,13 +238,11 @@ static const UInt8 kKeychainItemIdentifier[]    = "com.apple.dts.KeychainUI\0";
         // and the other values were added to the keychainData dictionary previously.
         // No pointer to the newly-added items is needed, so pass NULL for the second parameter:
         OSStatus errorcode = SecItemAdd(
-                                        (__bridge CFDictionaryRef)[self dictionaryToSecItemFormat:_keychainData],
-                                        NULL);
+            (__bridge CFDictionaryRef)[self dictionaryToSecItemFormat:_keychainData],
+            NULL);
         NSAssert(errorcode == noErr, @"Couldn't add the Keychain Item." );
         if (attributes) CFRelease(attributes);
     }
-    
 }
-
 
 @end
