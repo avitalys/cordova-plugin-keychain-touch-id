@@ -13,7 +13,7 @@
 
     <repo>https://github.com/sjhoeksma/cordova-plugin-keychain-touch-id.git</repo>
     <issue>https://github.com/sjhoeksma/cordova-plugin-keychain-touch-id/issues</issue>
-	  <js-module src="www/touchid.js" name="TouchID">
+        <js-module src="www/touchid.js" name="TouchID">
         <clobbers target="window.plugins.touchid" />
     </js-module>
 
@@ -31,5 +31,4 @@
         <framework src="Foundation.framework"/>
         <framework src="LocalAuthentication.framework"/>
     </platform>
-
 </plugin>
