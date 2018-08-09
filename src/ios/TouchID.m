@@ -40,8 +40,7 @@ NSString *keychainItemServiceName;
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
 }
-    
-    
+        
 - (void) didFingerprintDatabaseChange:(CDVInvokedUrlCommand*)command {
     // Get enrollment state
     [self.commandDelegate runInBackground:^{
@@ -80,66 +79,60 @@ NSString *keychainItemServiceName;
         }
     }];
 }
-    
-    
-    
-    - (void) verifyFingerprint:(CDVInvokedUrlCommand*)command {
         
-        NSString *message = [command.arguments objectAtIndex:0];
-        NSString *callbackId = command.callbackId;
+- (void) verifyFingerprint:(CDVInvokedUrlCommand*)command {      
+    NSString *message = [command.arguments objectAtIndex:0];
+    NSString *callbackId = command.callbackId;
         
-        [self.commandDelegate runInBackground:^{
+    [self.commandDelegate runInBackground:^{
             
-            if (keychainItemServiceName == nil) {
-                NSString *bundleID = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
-                keychainItemServiceName = [bundleID stringByAppendingString:@".TouchIDPlugin"];
-            }
+        if (keychainItemServiceName == nil) {
+        NSString *bundleID = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
+            keychainItemServiceName = [bundleID stringByAppendingString:@".TouchIDPlugin"];
+        }
             
-            if (![self createKeyChainEntry]) {
-                NSLog(@"Keychain trouble. Falling back to verifyFingerprintWithCustomPasswordFallback.");
-                [self verifyFingerprintWithCustomPasswordFallback:command];
-                return;
-            }
+        if (![self createKeyChainEntry]) {
+            NSLog(@"Keychain trouble. Falling back to verifyFingerprintWithCustomPasswordFallback.");
+            [self verifyFingerprintWithCustomPasswordFallback:command];
+            return;
+        }
             
-            // Create the keychain query attributes using the values from the first part of the code.
-            NSMutableDictionary * query = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
-                                           (__bridge id)(kSecClassGenericPassword), kSecClass,
-                                           keychainItemIdentifier, kSecAttrAccount,
-                                           keychainItemServiceName, kSecAttrService,
-                                           message, kSecUseOperationPrompt,
-                                           nil];
+        // Create the keychain query attributes using the values from the first part of the code.
+        NSMutableDictionary * query = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
+            (__bridge id)(kSecClassGenericPassword), kSecClass,
+            keychainItemIdentifier, kSecAttrAccount,
+            keychainItemServiceName, kSecAttrService,
+            message, kSecUseOperationPrompt,
+            nil];
             
-            // Start the query and the fingerprint scan and/or device passcode validation
-            OSStatus userPresenceStatus = SecItemCopyMatching((__bridge CFDictionaryRef)query, NULL);
+        // Start the query and the fingerprint scan and/or device passcode validation
+        OSStatus userPresenceStatus = SecItemCopyMatching((__bridge CFDictionaryRef)query, NULL);
             
-            // Ignore the found content of the key chain entry (the dummy password) and only evaluate the return code.
-            if (noErr == userPresenceStatus)
-            {
-                NSLog(@"Fingerprint or device passcode validated.");
-                [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK]
-                                            callbackId:command.callbackId];
-            }
-            else
-            {
-                NSLog(@"Fingerprint or device passcode could not be validated. Status %d.", (int) userPresenceStatus);
+        // Ignore the found content of the key chain entry (the dummy password) and only evaluate the return code.
+        if (noErr == userPresenceStatus)
+        {
+            NSLog(@"Fingerprint or device passcode validated.");
+            [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK]
+                                  callbackId:command.callbackId];
+        }
+        else
+        {
+            NSLog(@"Fingerprint or device passcode could not be validated. Status %d.", (int) userPresenceStatus);
                 
-                NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:userPresenceStatus userInfo:nil];
-                NSArray *errorKeys = @[@"code", @"localizedDescription"];
-                [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
-                                                                     messageAsDictionary:[error dictionaryWithValuesForKeys:errorKeys]]
-                                            callbackId:callbackId];
-                return;
-            }
-        }];
-    }
-    
-    
-    
-    
-    - (void) verifyFingerprintWithCustomPasswordFallback:(CDVInvokedUrlCommand*)command {
-        NSString *message = [command.arguments objectAtIndex:0];
-        [self verifyFingerprintWithCustomPasswordFallback:command.callbackId withMessage:message andEnterPasswordLabel:nil];
-    }
+            NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:userPresenceStatus userInfo:nil];
+            NSArray *errorKeys = @[@"code", @"localizedDescription"];
+            [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                  messageAsDictionary:[error dictionaryWithValuesForKeys:errorKeys]]
+                                  callbackId:callbackId];
+            return;
+        }
+    }];
+}        
+  
+- (void) verifyFingerprintWithCustomPasswordFallback:(CDVInvokedUrlCommand*)command {
+    NSString *message = [command.arguments objectAtIndex:0];
+    [self verifyFingerprintWithCustomPasswordFallback:command.callbackId withMessage:message andEnterPasswordLabel:nil];
+}
     
 - (void) verifyFingerprintWithCustomPasswordFallbackAndEnterPasswordLabel:(CDVInvokedUrlCommand*)command {
     NSString *message = [command.arguments objectAtIndex:0];
@@ -151,7 +144,7 @@ NSString *keychainItemServiceName;
     
     if (NSClassFromString(@"LAContext") == NULL) {
         [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR]
-                                    callbackId:callbackId];
+                              callbackId:callbackId];
         return;
     }
     
@@ -161,7 +154,7 @@ NSString *keychainItemServiceName;
         
         if (![laContext canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:&error]) {
             [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]]
-                                        callbackId:callbackId];
+                                  callbackId:callbackId];
             return;
         }
         
@@ -177,13 +170,13 @@ NSString *keychainItemServiceName;
         [laContext evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics localizedReason:message reply:^(BOOL authOK, NSError *error) {
             if (authOK) {
                 [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK]
-                                            callbackId:callbackId];
+                                      callbackId:callbackId];
             } else {
                 // invoked when the scan failed 3 times in a row, the cancel button was pressed, or the 'enter password' button was pressed
                 NSArray *errorKeys = @[@"code", @"localizedDescription"];
                 [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
-                                                                     messageAsDictionary:[error dictionaryWithValuesForKeys:errorKeys]]
-                                            callbackId:callbackId];
+                                      messageAsDictionary:[error dictionaryWithValuesForKeys:errorKeys]]
+                                      callbackId:callbackId];
             }
         }];
     }];
@@ -237,13 +230,11 @@ NSString *keychainItemServiceName;
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: @"Could not delete password from chain"];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
-
-
 }
 
 -(void)verify:(CDVInvokedUrlCommand*)command{
-	 	self.TAG = (NSString*)[command.arguments objectAtIndex:0];
-	  NSString* message = (NSString*)[command.arguments objectAtIndex:1];
+    self.TAG = (NSString*)[command.arguments objectAtIndex:0];
+    NSString* message = (NSString*)[command.arguments objectAtIndex:1];
     self.laContext = [[LAContext alloc] init];
     self.MyKeychainWrapper = [[KeychainWrapper alloc]init];
 
@@ -257,16 +248,15 @@ NSString *keychainItemServiceName;
 
                 if(success){
                     NSString *password = [self.MyKeychainWrapper myObjectForKey:@"v_Data"];
-									  CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString: password];
+                    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString: password];
                     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
                 }
                 if(error != nil) {
-										CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: [NSString stringWithFormat:@"%li", error.code]];
-										[self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: [NSString stringWithFormat:@"%li", error.code]];
+                    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
                 }
                 });
             }];
-
         }
         else{
             CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: @"-1"];
@@ -274,27 +264,26 @@ NSString *keychainItemServiceName;
         }
     }
     else{
-           CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: @"-1"];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString: @"-1"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
 }
     
-    
-    
-    // Note that this needs to run only once but it can deal with multiple runs
+// Note: this needs to run only once but it can deal with multiple runs
 - (BOOL) createKeyChainEntry {
     NSMutableDictionary	* attributes = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
-                                        (__bridge id)(kSecClassGenericPassword), kSecClass,
-                                        keychainItemIdentifier, kSecAttrAccount,
-                                        keychainItemServiceName, kSecAttrService,
-                                        nil];
+        (__bridge id)(kSecClassGenericPassword), kSecClass,
+        keychainItemIdentifier, kSecAttrAccount,
+        keychainItemServiceName, kSecAttrService,
+        nil];
     
     CFErrorRef accessControlError = NULL;
     SecAccessControlRef accessControlRef = SecAccessControlCreateWithFlags(
-                                                                           kCFAllocatorDefault,
-                                                                           kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
-                                                                           kSecAccessControlUserPresence,
-                                                                           &accessControlError);
+        kCFAllocatorDefault,
+        kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
+        kSecAccessControlUserPresence,
+        &accessControlError);
+	
     if (accessControlRef == NULL || accessControlError != NULL)
     {
         NSLog(@"Can't store identifier '%@' in the KeyChain: %@.", keychainItemIdentifier, accessControlError);
@@ -309,8 +298,5 @@ NSString *keychainItemServiceName;
     SecItemAdd((__bridge CFDictionaryRef)attributes, NULL);
     return YES;
 }
-    
-    
-    
-    
+ 
 @end
